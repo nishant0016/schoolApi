@@ -38,17 +38,47 @@ app.post("/login",function(req,res){
 });
 app.post("/register",function(req,res){
     let body=req.body;
-    let maxId=customersData.reduce((acc,curr)=>curr.custId>=acc?curr.custId:acc,0);
-    let newId=maxId+1;
-    let newCustomer={custId:newId,...body};
-    customersData.push(newCustomer);
-    console.log(newCustomer);
-    let json={
-        name:body.name,
-        role:body.role,
-        email:body.email,
+    let all=customersData.findIndex(cr=>cr.email===body.email);
+    if(all<0){
+        let maxId=customersData.reduce((acc,curr)=>curr.custId>=acc?curr.custId:acc,0);
+        let newId=maxId+1;
+        let newCustomer={custId:newId,...body};
+        customersData.push(newCustomer);
+        console.log(all);
+        if (body.role==="student"){
+            let makId=studentsData.reduce((acc,curr)=>curr.id>=acc?curr.id:acc,0);
+            let newId=makId+1;
+            let json={
+                id:newId,
+                name:body.name,
+                dob:"",
+                gender:"",
+                about:"",
+                courses:[],
+            }
+            studentsData.unshift(json);
+        };
+        if (body.role==="faculty"){
+            let maxId=facultiesData.reduce((acc,curr)=>curr.id>=acc?curr.id:acc,0);
+            let newId=maxId+1;
+            let json={
+                id:newId,
+                name:body.name,
+                courses:[],
+            }
+            facultiesData.unshift(json);
+        }
+        let json={
+            name:body.name,
+            role:body.role,
+            email:body.email,
+        }
+        res.send(json);
     }
-    res.send(json);
+    else{
+        res.status(500).send("E-mail should be unique")
+    }
+    
 });
 
 app.get("/getStudentNames",function(req,res){
@@ -152,17 +182,14 @@ app.get("/getFaculties",function(req,res){
 
 app.post("/postStudentDetails",function(req,res){
     let body=req.body;
-    let makId=studentsData.reduce((acc,curr)=>curr.id>=acc?curr.id:acc,0);
-    let newId=makId+1;
-    let newStudent={id:newId,
-        name:body.name,
-        dob:body.dob,
-        gender:body.gender,
-        about:body.about,
-        courses:[]
-    }
-    studentsData.unshift(newStudent);
-    res.send(newStudent);
+   
+    let index=studentsData.findIndex(st=>st.id===body.id);
+    console.log(console.log(studentsData[index]));
+    studentsData[index].dob=body.dob;
+    studentsData[index].gender=body.gender;
+    studentsData[index].about=body.about;
+    console.log(console.log(studentsData[index]));
+    res.send(studentsData[index]);
 });
 
 app.get("/getStudentDetails/:name",function(req,res){
